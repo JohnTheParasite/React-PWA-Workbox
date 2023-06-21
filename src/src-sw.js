@@ -49,3 +49,32 @@ registerRoute(
     ],
   })
 );
+
+// We use CacheFirst for images because, images are not going to change very often,
+// so it does not make sense to revalidate images on every request.
+//
+// @see https://developers.google.com/web/tools/workbox/guides/common-recipes#caching_images
+registerRoute(
+  ({ request }) => request.destination === "image",
+  new CacheFirst({
+    cacheName: "images",
+    plugins: [
+      new CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+      new ExpirationPlugin({
+        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
+        maxEntries: 60,
+      }),
+    ],
+  })
+);
+
+// @see https://developers.google.com/web/tools/workbox/guides/common-recipes#cache_css_and_javascript_files
+registerRoute(
+  ({ request }) =>
+    request.destination === "script" || request.destination === "style",
+  new StaleWhileRevalidate({
+    cacheName: "static-resources",
+  })
+);
